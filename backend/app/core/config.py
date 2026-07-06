@@ -23,8 +23,8 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 # CORS & Frontend
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000, https://vikas-seed-store.vercel.app",).split(",")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173","https://vikas-seed-store.vercel.app")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,https://vikas-seed-store.vercel.app").split(",")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://vikas-seed-store.vercel.app" if ENVIRONMENT == "production" else "http://localhost:5173")
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # File Uploads
