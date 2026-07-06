@@ -1,0 +1,58 @@
+# ============================================================
+# Docker Compose Override for Production with Let's Encrypt
+# ============================================================
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+version: '3.9'
+
+services:
+  # Certbot for automatic SSL renewal
+  certbot:
+    image: certbot/certbot:latest
+    container_name: krishisathi_certbot
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - ./certbot_webroot:/var/www/certbot
+      - ./certbot.ini:/etc/letsencrypt/cli.ini:ro
+    entrypoint: >
+      sh -c "certbot renew --quiet --agree-tos --email ${LETSENCRYPT_EMAIL}
+      && certbot certonly --webroot -w /var/www/certbot
+      -d ${DOMAIN_NAME} --non-interactive --agree-tos --email ${LETSENCRYPT_EMAIL}"
+    restart: unless-stopped
+    networks:
+      - krishisathi_network
+    depends_on:
+      - nginx
+
+  # Nginx with Let's Encrypt certificates
+  nginx:
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./certbot_webroot:/var/www/certbot:ro
+
+  # PostgreSQL backup service
+  backup:
+    image: postgres:16-alpine
+    container_name: krishisathi_backup
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - ./backend/scripts/backup-db.sh:/docker-entrypoint-initdb.d/backup.sh:ro
+    entrypoint: >
+      sh -c "while true; do
+        BACKUP_FILE=/backups/krishisathi_$(date +%Y%m%d_%H%M%S).sql;
+        pg_dump -h postgres -U ${DB_USER} -d ${DB_NAME} > $$BACKUP_FILE;
+        find /backups -mtime +${BACKUP_RETENTION_DAYS:-30} -delete;
+        sleep ${BACKUP_INTERVAL:-86400};
+      done"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - krishisathi_network
+
+networks:
+  krishisathi_network:
+    driver: bridge

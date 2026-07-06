@@ -1,0 +1,93 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Python Build
+build/
+dist/
+*.egg-info/
+
+# Logs
+logs/
+*.log
+
+# SQLite
+*.db
+*.sqlite3
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Node
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads
+backend/app/uploads/
+
+# ChromaDB
+backend/chroma_db/
+backend/chroma/
+chroma/
+
+# Docker
+*.tar
+
+# Backups
+backups/
+*.bak
+*.old
+*.backup
+
+# Temporary
+tmp/
+temp/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+
+# Render
+.render/
+
+# Local databases
+postgres_data/

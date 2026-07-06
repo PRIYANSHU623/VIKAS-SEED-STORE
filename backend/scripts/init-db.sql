@@ -1,0 +1,3 @@
+-- Database initialization script placeholder.
+-- The main database is created by the postgres container using POSTGRES_DB.
+-- Additional schema setup can be added here when needed.
