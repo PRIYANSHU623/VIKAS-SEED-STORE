@@ -6,10 +6,10 @@ export const normalizeProductImage = (img: string | undefined | null): string =>
         return "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600";
     }
     if (img.startsWith("/uploads")) {
-        return `http://localhost:8000${img}`;
+        return `${import.meta.env.VITE_API_URL}${img}`;
     }
     if (img.startsWith("uploads")) {
-        return `http://localhost:8000/${img}`;
+        return `${import.meta.env.VITE_API_URL}${img}`;
     }
     return img;
 };

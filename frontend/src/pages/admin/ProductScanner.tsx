@@ -795,7 +795,7 @@ export default function ProductScanner() {
                   {onboardingData.image_urls.map((url, i) => (
                     <img 
                       key={i}
-                      src={`http://localhost:8000${url}`}
+                      src={`import.meta.env.VITE_API_URL${url}`}
                       alt="Product Spec" 
                       className="h-20 w-28 object-cover rounded-xl border border-gray-100 shadow-sm flex-shrink-0"
                     />
@@ -1101,7 +1101,7 @@ export default function ProductScanner() {
                 {selectedThumbnail && (
                   <div className="relative rounded-2xl overflow-hidden border border-teal-100 bg-teal-50/20 aspect-video flex items-center justify-center">
                     <img 
-                      src={selectedThumbnail.startsWith("/") ? `http://localhost:8000${selectedThumbnail}` : selectedThumbnail} 
+                      src={selectedThumbnail.startsWith("/") ? `http://${selectedThumbnail}` : selectedThumbnail} 
                       alt="Selected Catalog Thumbnail" 
                       className="w-full h-full object-cover"
                     />
@@ -1128,7 +1128,7 @@ export default function ProductScanner() {
                               isSelected ? "border-teal-600 shadow" : "border-gray-200 opacity-60 hover:opacity-100"
                             }`}
                           >
-                            <img src={`http://localhost:8000${url}`} className="w-full h-full object-cover" />
+                            <img src={`http://${url}`} className="w-full h-full object-cover" />
                             {isSelected && (
                               <div className="absolute inset-0 bg-teal-600/15 flex items-center justify-center">
                                 <span className="p-0.5 bg-teal-600 text-white rounded-full">
