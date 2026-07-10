@@ -362,7 +362,7 @@ export default function AIAssistant() {
               </button>
             )}
             <div>
-              <h2 className="text-sm font-extrabold text-slate-800 my-0 flex items-center gap-1.5">
+              <h2 className="text-sm text-gray-800 font-extrabold my-0 flex items-center gap-1.5">
                 <Sprout size={16} className="text-green-600" /> KrishiSathi AI
               </h2>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block leading-none mt-0.5">
