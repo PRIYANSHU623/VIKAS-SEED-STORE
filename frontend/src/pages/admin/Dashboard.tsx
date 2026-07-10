@@ -412,7 +412,7 @@ export default function AdminDashboard() {
         {activeTab === "dashboard" && (
           <div className="space-y-8 animate-fade-in">
             <div className="space-y-1">
-              <h2 className="text-2xl font-extrabold text-slate-900 my-0 py-0">Admin Control Center</h2>
+              <h2 className="text-2xl font-extrabold text-black my-0 py-0">Admin Control Center</h2>
               <p className="text-sm text-slate-500 font-medium">Overview of store metrics, financial reporting, and stock balances.</p>
             </div>
 

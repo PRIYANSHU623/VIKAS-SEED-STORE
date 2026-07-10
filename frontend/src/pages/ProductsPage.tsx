@@ -184,7 +184,7 @@ export default function ProductsPage() {
     <div className="space-y-8 pb-16">
       {/* Page Header */}
       <div className="bg-green-50/50 border border-green-100 rounded-3xl p-8 text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight my-0 py-0">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight my-0 py-0">
           Agricultural Product Store
         </h1>
         <p className="text-black max-w-3xl mx-auto">
@@ -330,8 +330,8 @@ export default function ProductsPage() {
             </div>
           ) : (
             <>
-              <div className="flex justify-between items-center text-sm text-gray-200 px-2">
-                <span>Showing <strong className="text-gray-100">{filteredProducts.length}</strong> products</span>
+              <div className="flex justify-between items-center text-sm text-gray-600 px-2">
+                <span>Showing <strong className="text-gray-700">{filteredProducts.length}</strong> products</span>
               </div>
 
               {filteredProducts.length > 0 ? (
