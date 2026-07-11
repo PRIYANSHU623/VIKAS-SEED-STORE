@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+# from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
@@ -89,7 +89,7 @@ app.add_middleware(
 )
 
 # Mount uploads static folder
-app.mount("/uploads", StaticFiles(directory="app/uploads"), name="uploads")
+# app.mount("/uploads", StaticFiles(directory="app/uploads"), name="uploads")
 
 # ============================================================
 # HEALTH & MONITORING ENDPOINTS
