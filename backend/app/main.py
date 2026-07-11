@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
@@ -54,6 +54,8 @@ app = FastAPI(
 Base.metadata.create_all(bind=engine)
 
 os.makedirs(LOG_DIR, exist_ok=True)
+os.makedirs("app/uploads/audio", exist_ok=True)
+os.makedirs("app/uploads/knowledge", exist_ok=True)
 
 logger.info(f"Starting KrishiSathi application in {ENVIRONMENT} environment")
 
@@ -89,7 +91,7 @@ app.add_middleware(
 )
 
 # Mount uploads static folder
-# app.mount("/uploads", StaticFiles(directory="app/uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory="app/uploads"), name="uploads")
 
 # ============================================================
 # HEALTH & MONITORING ENDPOINTS
