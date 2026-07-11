@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, Float, String, JSON
+from sqlalchemy.orm import relationship
 
 from app.database.db import Base
 
@@ -35,3 +36,5 @@ class Product(Base):
     confidence_scores = Column(JSON, nullable=True)
     sources = Column(JSON, nullable=True)
     tags = Column(JSON, nullable=True)
+    
+    reviews = relationship("Review", back_populates="product", cascade="all, delete-orphan")

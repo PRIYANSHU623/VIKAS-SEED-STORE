@@ -15,8 +15,9 @@ from app.models.document_chunk import DocumentChunk
 from app.models.conversation import Conversation
 from app.models.user_profile import UserProfile
 from app.models.conversation_summary import ConversationSummary
+from app.models.review import Review
 from app.routers import assistant
-from app.routers import auth, products, orders
+from app.routers import auth, products, orders, reviews
 from app.routers import scanner
 from app.routers import knowledge
 from app.routers import rag
@@ -141,6 +142,13 @@ app.include_router(
     products.router,
     prefix="/api/products",
     tags=["products"]
+)
+
+# Reviews
+app.include_router(
+    reviews.router,
+    prefix="/api/reviews",
+    tags=["reviews"]
 )
 
 # Orders

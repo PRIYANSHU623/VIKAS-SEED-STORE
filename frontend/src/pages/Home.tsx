@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Sprout, Users, CheckCircle, Award, Shield, Truck, Sparkles, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { MOCK_PRODUCTS, MOCK_TESTIMONIALS } from "../utils/mockData";
+import { MOCK_PRODUCTS } from "../utils/mockData";
 import { type Product } from "../types/product";
 import ProductCard from "../components/product/ProductCard";
 import { getProducts } from "../api/productApi";
+import { getHomepageReviews, type Review } from "../api/reviewApi";
 import { AuthContext } from "../context/AuthContext";
 import AddedToCartModal from "../components/common/AddedToCartModal";
 
@@ -12,6 +13,7 @@ import AddedToCartModal from "../components/common/AddedToCartModal";
 export default function Home() {
   const { user } = useContext(AuthContext) || { user: null };
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [testimonials, setTestimonials] = useState<Review[]>([]);
   const [productsList, setProductsList] = useState<Product[]>([]);
   const [addedProduct, setAddedProduct] = useState<Product | null>(null);
   const [isAddedModalOpen, setIsAddedModalOpen] = useState(false);
@@ -38,6 +40,18 @@ export default function Home() {
       }
     };
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const data = await getHomepageReviews();
+        setTestimonials(data);
+      } catch (error) {
+        console.error("Failed to load testimonials:", error);
+      }
+    };
+    fetchTestimonials();
   }, []);
 
   const stats = [
@@ -105,11 +119,13 @@ export default function Home() {
   const featuredProducts = productsList.slice(0, 4);
 
   const nextTestimonial = () => {
-    setActiveTestimonial((prev) => (prev + 1) % MOCK_TESTIMONIALS.length);
+    if (testimonials.length === 0) return;
+    setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
   };
 
   const prevTestimonial = () => {
-    setActiveTestimonial((prev) => (prev - 1 + MOCK_TESTIMONIALS.length) % MOCK_TESTIMONIALS.length);
+    if (testimonials.length === 0) return;
+    setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
@@ -290,58 +306,64 @@ export default function Home() {
           </p>
         </div>
         
-        <div className="relative bg-white border border-gray-100 rounded-3xl shadow-xl p-8 sm:p-12">
-          {/* Decorative quote icon */}
-          <span className="absolute top-6 left-8 text-7xl text-green-100 select-none font-serif">“</span>
+        {testimonials.length > 0 && testimonials[activeTestimonial] ? (
+          <div className="relative bg-white border border-gray-100 rounded-3xl shadow-xl p-8 sm:p-12">
+            {/* Decorative quote icon */}
+            <span className="absolute top-6 left-8 text-7xl text-green-100 select-none font-serif">“</span>
 
-          <div className="space-y-6 relative z-10">
-            <p className="text-lg sm:text-xl text-gray-700 italic leading-relaxed text-center">
-              "{MOCK_TESTIMONIALS[activeTestimonial].text}"
-            </p>
-            <div className="flex items-center justify-center gap-4 pt-4">
-              <img 
-                src={MOCK_TESTIMONIALS[activeTestimonial].image} 
-                alt={MOCK_TESTIMONIALS[activeTestimonial].name}
-                className="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-md"
-              />
-              <div className="text-left">
-                <h4 className="font-bold text-gray-900">{MOCK_TESTIMONIALS[activeTestimonial].name}</h4>
-                <p className="text-xs text-green-600 font-semibold">{MOCK_TESTIMONIALS[activeTestimonial].role}</p>
-                <p className="text-xs text-gray-400">{MOCK_TESTIMONIALS[activeTestimonial].location}</p>
+            <div className="space-y-6 relative z-10">
+              <p className="text-lg sm:text-xl text-gray-700 italic leading-relaxed text-center">
+                "{testimonials[activeTestimonial].comment}"
+              </p>
+              <div className="flex items-center justify-center gap-4 pt-4">
+                <img 
+                  src={testimonials[activeTestimonial].user_image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150"} 
+                  alt={testimonials[activeTestimonial].user_name}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-md"
+                />
+                <div className="text-left">
+                  <h4 className="font-bold text-gray-900">{testimonials[activeTestimonial].user_name}</h4>
+                  <p className="text-xs text-green-600 font-semibold">{testimonials[activeTestimonial].user_role || "Farmer"}</p>
+                  <p className="text-xs text-gray-400">{testimonials[activeTestimonial].user_location || "India"}</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Carousel Buttons */}
-          <div className="flex items-center justify-center gap-4 mt-8 pt-4">
-            <button 
-              onClick={prevTestimonial}
-              className="p-2.5 bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-700 rounded-xl border border-gray-100 hover:border-green-100 active:scale-95 transition-all"
-              aria-label="Previous review"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="flex gap-1.5">
-              {MOCK_TESTIMONIALS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveTestimonial(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
-                    activeTestimonial === i ? "bg-green-600 w-6" : "bg-gray-200"
-                  }`}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ))}
+            {/* Carousel Buttons */}
+            <div className="flex items-center justify-center gap-4 mt-8 pt-4">
+              <button 
+                onClick={prevTestimonial}
+                className="p-2.5 bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-700 rounded-xl border border-gray-100 hover:border-green-100 active:scale-95 transition-all"
+                aria-label="Previous review"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <div className="flex gap-1.5">
+                {testimonials.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveTestimonial(i)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                      activeTestimonial === i ? "bg-green-600 w-6" : "bg-gray-200"
+                    }`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+              <button 
+                onClick={nextTestimonial}
+                className="p-2.5 bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-700 rounded-xl border border-gray-100 hover:border-green-100 active:scale-95 transition-all"
+                aria-label="Next review"
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
-            <button 
-              onClick={nextTestimonial}
-              className="p-2.5 bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-700 rounded-xl border border-gray-100 hover:border-green-100 active:scale-95 transition-all"
-              aria-label="Next review"
-            >
-              <ChevronRight size={18} />
-            </button>
           </div>
-        </div>
+        ) : (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          </div>
+        )}
       </section>
 
       {/* 7. Call To Action Section */}
