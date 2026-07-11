@@ -53,8 +53,6 @@ app = FastAPI(
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-# Ensure uploads directory exists
-os.makedirs("app/uploads/products", exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
 
 logger.info(f"Starting KrishiSathi application in {ENVIRONMENT} environment")

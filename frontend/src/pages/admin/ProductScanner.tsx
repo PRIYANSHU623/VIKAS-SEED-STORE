@@ -331,28 +331,7 @@ export default function ProductScanner() {
 
     setLoading(true);
 
-    // Convert local scanned image to base64 if selected
     let finalImageUrl = selectedThumbnail || "";
-    if (finalImageUrl.startsWith("/uploads/")) {
-      try {
-        // Match the index from the filename, e.g. /uploads/products/123_abc_2.jpg
-        const match = finalImageUrl.match(/_(\d+)\.[^.]+$/);
-        if (match) {
-          const fileIdx = parseInt(match[1], 10);
-          const file = uploadedFiles[fileIdx];
-          if (file) {
-            finalImageUrl = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = (error) => reject(error);
-              reader.readAsDataURL(file);
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Failed to convert selected thumbnail to base64:", err);
-      }
-    }
 
     const payload = {
       name: onboardingData.fields.name.value,
@@ -795,7 +774,7 @@ export default function ProductScanner() {
                   {onboardingData.image_urls.map((url, i) => (
                     <img 
                       key={i}
-                      src={`import.meta.env.VITE_API_URL${url}`}
+                      src={url}
                       alt="Product Spec" 
                       className="h-20 w-28 object-cover rounded-xl border border-gray-100 shadow-sm flex-shrink-0"
                     />
@@ -1128,7 +1107,7 @@ export default function ProductScanner() {
                               isSelected ? "border-teal-600 shadow" : "border-gray-200 opacity-60 hover:opacity-100"
                             }`}
                           >
-                            <img src={`http://${url}`} className="w-full h-full object-cover" />
+                            <img src={url} className="w-full h-full object-cover" />
                             {isSelected && (
                               <div className="absolute inset-0 bg-teal-600/15 flex items-center justify-center">
                                 <span className="p-0.5 bg-teal-600 text-white rounded-full">

@@ -8,10 +8,10 @@ from app.services.web_enrichment_service import enrich_missing_fields, search_we
 from app.services.duplicate_detection_service import check_for_duplicate
 from app.services.metadata_generation_service import generate_agricultural_metadata
 
-def run_onboarding_pipeline(image_paths: List[str], db: Session, client_ip: str = "127.0.0.1") -> Dict[str, Any]:
+def run_onboarding_pipeline(image_paths: List[str], cloudinary_urls: List[str], db: Session, client_ip: str = "127.0.0.1") -> Dict[str, Any]:
     """
     Coordinates the complete AI Product Onboarding Agent workflow:
-    1. Upload and store images (handled in router, paths provided here).
+    1. Upload images to Cloudinary (handled in router, URLs provided here).
     2. Analyze all images using Gemini Vision.
     3. Extract all visible product information.
     4. Validate extracted information.
@@ -35,8 +35,8 @@ def run_onboarding_pipeline(image_paths: List[str], db: Session, client_ip: str 
             "status": "completed"
         })
 
-    # Step 1: Uploading Images (Completed in Router)
-    add_step("Uploading Images", f"Stored {len(image_paths)} image(s) locally.")
+    # Step 1: Uploading Images to Cloudinary (Completed in Router)
+    add_step("Uploading Images", f"Uploaded {len(cloudinary_urls)} image(s) to Cloudinary.")
 
     # Step 2: Analyzing Images & Step 3: Extracting Info
     print("Pipeline: Running Gemini Vision analysis...")
@@ -140,14 +140,8 @@ def run_onboarding_pipeline(image_paths: List[str], db: Session, client_ip: str 
     add_step("Preparing Review", f"Compiled results, confidence scores, sources and found {len(web_images)} web image(s).")
     add_step("Ready for Approval", "Onboarding agent review pending administrator confirmation.")
 
-    # Format output images path to serve relative URLs
-    relative_images = []
-    for path in image_paths:
-        # e.g., converts 'app/uploads/products/xyz.jpg' to '/uploads/products/xyz.jpg'
-        rel_path = path.replace("app/uploads", "/uploads")
-        if not rel_path.startswith("/"):
-            rel_path = "/" + rel_path
-        relative_images.append(rel_path)
+    # Return Cloudinary secure URLs directly
+    image_urls = cloudinary_urls
 
     # Calculate overall confidence
     confidences = [info.get("confidence", 0) for info in validated_fields.values() if info.get("confidence") is not None]
@@ -159,7 +153,7 @@ def run_onboarding_pipeline(image_paths: List[str], db: Session, client_ip: str 
         "warnings": warnings,
         "duplicate_info": duplicate_info,
         "tags": meta_tags_desc.get("tags") or [],
-        "image_urls": relative_images,
+        "image_urls": image_urls,
         "web_image_urls": web_images,
         "timeline": timeline,
         "confidence": overall_confidence

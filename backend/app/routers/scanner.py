@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 import uuid
+import tempfile
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database.db import get_db
 from app.services.product_scanner import run_onboarding_pipeline
+from app.services.cloudinary_service import upload_image_to_cloudinary
 
 router = APIRouter()
 
@@ -34,27 +36,28 @@ async def analyze_images(
             detail="A maximum of 6 product images can be uploaded."
         )
 
-    upload_dir = "app/uploads/products"
-    os.makedirs(upload_dir, exist_ok=True)
-
-    saved_paths = []
-    for idx, file in enumerate(images):
-        # Extract extension safely
-        _, ext = os.path.splitext(file.filename or "")
-        if not ext:
-            ext = ".jpg"
-            
-        # Create non-colliding filename
-        filename = f"{int(time.time())}_{uuid.uuid4().hex[:8]}_{idx}{ext}"
-        file_path = os.path.join(upload_dir, filename)
-
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        saved_paths.append(file_path)
+    temp_paths = []
+    cloudinary_urls = []
 
     try:
-        result = run_onboarding_pipeline(saved_paths, db)
+        for idx, file in enumerate(images):
+            # Extract extension safely
+            _, ext = os.path.splitext(file.filename or "")
+            if not ext:
+                ext = ".jpg"
+                
+            # Create a secure temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as temp_file:
+                shutil.copyfileobj(file.file, temp_file)
+                temp_path = temp_file.name
+                
+            temp_paths.append(temp_path)
+
+            # Upload to Cloudinary
+            cloudinary_url = upload_image_to_cloudinary(temp_path)
+            cloudinary_urls.append(cloudinary_url)
+
+        result = run_onboarding_pipeline(temp_paths, cloudinary_urls, db)
         return result
     except Exception as err:
         print(f"Product Onboarding pipeline error: {err}")
@@ -64,5 +67,14 @@ async def analyze_images(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during onboarding analysis: {str(err)}"
         )
+    finally:
+        # Delete any temporary local file if one is created
+        for temp_path in temp_paths:
+            if os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except Exception as e:
+                    print(f"Error removing temp file {temp_path}: {e}")
+
 
     

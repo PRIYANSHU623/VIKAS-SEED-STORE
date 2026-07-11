@@ -176,11 +176,8 @@ def get_analytics(
     out_of_stock = [p for p in products if p.stock == 0]
     total_stock_value = sum(p.price * p.stock for p in products)
 
-    # Scanner upload statistics (counting files)
-    upload_count = 0
-    upload_dir = "app/uploads/products"
-    if os.path.exists(upload_dir):
-        upload_count = len([f for f in os.listdir(upload_dir) if os.path.isfile(os.path.join(upload_dir, f))])
+    # Scanner upload statistics (counting Cloudinary URLs in database)
+    upload_count = sum(1 for p in products if p.image_url and "cloudinary.com" in p.image_url)
 
     # 4. User / Farmer Analytics
     lang_pref = {"English": 0, "Hindi": 0}

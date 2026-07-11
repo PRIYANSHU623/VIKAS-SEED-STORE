@@ -15,38 +15,6 @@ from app.core.dependencies import (
     get_current_admin
 )
 
-def convert_local_image_to_base64(image_url: Optional[str]) -> Optional[str]:
-    if not image_url or not image_url.startswith("/uploads/"):
-        return image_url
-        
-    cleaned_path = image_url.lstrip("/")
-    
-    # Try multiple potential paths to locate the file on disk
-    possible_paths = [
-        os.path.join("app", cleaned_path),
-        cleaned_path,
-        os.path.abspath(os.path.join("app", cleaned_path)),
-        os.path.abspath(cleaned_path),
-    ]
-    
-    for path in possible_paths:
-        if os.path.exists(path) and os.path.isfile(path):
-            try:
-                _, ext = os.path.splitext(path)
-                mime_type = "image/jpeg"
-                if ext.lower() == ".png":
-                    mime_type = "image/png"
-                elif ext.lower() in [".gif", ".webp"]:
-                    mime_type = f"image/{ext.lower()[1:]}"
-                
-                with open(path, "rb") as img_file:
-                    encoded = base64.b64encode(img_file.read()).decode("utf-8")
-                    return f"data:{mime_type};base64,{encoded}"
-            except Exception as e:
-                print(f"Error reading local file {path} for base64 conversion: {e}")
-                
-    return image_url
-
 router = APIRouter()
 
 
@@ -76,9 +44,6 @@ def create_product(
     current_admin: User = Depends(get_current_admin)
 ):
     """Create a new product - Admin only"""
-    if product.image_url:
-        product.image_url = convert_local_image_to_base64(product.image_url)
-        
     db_product = Product(**product.model_dump())
     db.add(db_product)
     db.commit()
@@ -101,9 +66,6 @@ def update_product(
             detail="Product not found"
         )
     
-    if product_update.image_url:
-        product_update.image_url = convert_local_image_to_base64(product_update.image_url)
-        
     update_data = product_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_product, field, value)

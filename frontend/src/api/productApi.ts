@@ -2,14 +2,8 @@ import api from "./axios";
 import { MOCK_PRODUCTS } from "../utils/mockData";
 
 export const normalizeProductImage = (img: string | undefined | null): string => {
-    if (!img || img === "null" || img === "undefined" || img === "") {
+    if (!img || img === "null" || img === "undefined" || img === "" || img.startsWith("/uploads") || img.startsWith("uploads")) {
         return "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600";
-    }
-    if (img.startsWith("/uploads")) {
-        return `${import.meta.env.VITE_API_URL}${img}`;
-    }
-    if (img.startsWith("uploads")) {
-        return `${import.meta.env.VITE_API_URL}${img}`;
     }
     return img;
 };
@@ -24,15 +18,23 @@ export const getProducts = async () => {
         const local = localStorage.getItem("products");
         if (local) {
             const list = JSON.parse(local);
-            return list.map((p: any) => ({
-                ...p,
-                image: normalizeProductImage(p.image_url || p.image)
-            }));
+            return list.map((p: any) => {
+                const normImg = normalizeProductImage(p.image_url || p.image);
+                return {
+                    ...p,
+                    image: normImg,
+                    image_url: normImg
+                };
+            });
         }
-        const mockNormalized = MOCK_PRODUCTS.map((p: any) => ({
-            ...p,
-            image: normalizeProductImage(p.image_url || p.image)
-        }));
+        const mockNormalized = MOCK_PRODUCTS.map((p: any) => {
+            const normImg = normalizeProductImage(p.image_url || p.image);
+            return {
+                ...p,
+                image: normImg,
+                image_url: normImg
+            };
+        });
         localStorage.setItem("products", JSON.stringify(mockNormalized));
         return mockNormalized;
     }
@@ -44,10 +46,14 @@ export const getProducts = async () => {
     if (dbProducts.length === 0) {
         // If DB has no products, merge local products with MOCK_PRODUCTS
         const merged = localProducts.length > 0 ? localProducts : MOCK_PRODUCTS;
-        const normalizedMerged = merged.map((p: any) => ({
-            ...p,
-            image: normalizeProductImage(p.image_url || p.image)
-        }));
+        const normalizedMerged = merged.map((p: any) => {
+            const normImg = normalizeProductImage(p.image_url || p.image);
+            return {
+                ...p,
+                image: normImg,
+                image_url: normImg
+            };
+        });
         localStorage.setItem("products", JSON.stringify(normalizedMerged));
         return normalizedMerged;
     }
@@ -87,21 +93,29 @@ export const getProducts = async () => {
         }
     }
 
-    // Update localStorage with normalized DB products + any remaining custom ones
+    // Normalize dbProducts to match the frontend shape
     const dbProductNames = new Set(dbProducts.map((p: any) => p.name.toLowerCase()));
     const finalCustomProducts = customLocalProducts.filter((p: any) => !dbProductNames.has(p.name.toLowerCase()));
     
     // Normalize dbProducts to match the frontend shape
-    const normalizedDb = dbProducts.map((p: any) => ({
-        ...p,
-        id: p.id.toString(),
-        image: normalizeProductImage(p.image_url || p.image)
-    }));
+    const normalizedDb = dbProducts.map((p: any) => {
+        const normImg = normalizeProductImage(p.image_url || p.image);
+        return {
+            ...p,
+            id: p.id.toString(),
+            image: normImg,
+            image_url: normImg
+        };
+    });
 
-    const normalizedCustom = finalCustomProducts.map((p: any) => ({
-        ...p,
-        image: normalizeProductImage(p.image_url || p.image)
-    }));
+    const normalizedCustom = finalCustomProducts.map((p: any) => {
+        const normImg = normalizeProductImage(p.image_url || p.image);
+        return {
+            ...p,
+            image: normImg,
+            image_url: normImg
+        };
+    });
 
     const mergedList = [...normalizedCustom, ...normalizedDb];
     localStorage.setItem("products", JSON.stringify(mergedList));
@@ -112,10 +126,12 @@ export const getProductById = async (id: string | number) => {
     try {
         const response = await api.get(`/products/${id}`);
         const p = response.data;
+        const normImg = normalizeProductImage(p.image_url || p.image);
         return {
             ...p,
             id: p.id.toString(),
-            image: normalizeProductImage(p.image_url || p.image)
+            image: normImg,
+            image_url: normImg
         };
     } catch (err) {
         console.error(`API getProductById ${id} failed, finding in local storage:`, err);
@@ -139,10 +155,12 @@ export const createProduct = async (data: any) => {
         const products = local ? JSON.parse(local) : [...MOCK_PRODUCTS];
         const filtered = products.filter((p: any) => p.name.toLowerCase() !== newProduct.name.toLowerCase());
         
+        const normImg = normalizeProductImage(newProduct.image_url || newProduct.image);
         filtered.unshift({
             ...newProduct,
             id: newProduct.id.toString(),
-            image: normalizeProductImage(newProduct.image_url || newProduct.image)
+            image: normImg,
+            image_url: normImg
         });
         localStorage.setItem("products", JSON.stringify(filtered));
 
@@ -163,6 +181,7 @@ export const createProduct = async (data: any) => {
             rating: 5.0,
             reviewsCount: 0,
             image: normalizeProductImage(data.image_url || data.image),
+            image_url: normalizeProductImage(data.image_url || data.image),
             description: data.description || ""
         };
 
@@ -185,11 +204,13 @@ export const updateProduct = async (id: string | number, data: any) => {
             const products = JSON.parse(local);
             const index = products.findIndex((p: any) => p.id.toString() === id.toString());
             if (index !== -1) {
+                const normImg = normalizeProductImage(updatedProduct.image_url || updatedProduct.image || products[index].image);
                 products[index] = {
                     ...products[index],
                     ...updatedProduct,
                     id: updatedProduct.id.toString(),
-                    image: normalizeProductImage(updatedProduct.image_url || updatedProduct.image || products[index].image)
+                    image: normImg,
+                    image_url: normImg
                 };
                 localStorage.setItem("products", JSON.stringify(products));
             }
